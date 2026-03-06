@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load films_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<form method="get" action="">
+    <div class="form-input">
+        <label for="genre" class="form-label">Выберите жанр:</label>
+        <select name="genre" id="genre" onchange="this.form.submit()" class="form-input">
+            <option value="">Все жанры</option>
+            <option value="фантастика" {% if request.GET.genre == 'фантастика' %}selected{% endif %}>Фантастика</option>
+            <option value="драма" {% if request.GET.genre == 'драма' %}selected{% endif %}>Драма</option>
+            <option value="комедия" {% if request.GET.genre == 'комедия' %}selected{% endif %}>Комедия</option>
+            <option value="криминал" {% if request.GET.genre == 'криминал' %}selected{% endif %}>Криминал</option>
+        </select>
+    </div>
+</form>
+
+{% if request.GET.genre %}
+    {% get_films_by_genre request.GET.genre as filtered_films %}
+    <div class="content-text">
+        <h2>Фильмы жанра "{{ request.GET.genre|capfirst }}"</h2>
+        <p>Найдено фильмов: {{ filtered_films|length }}</p>
+    </div>
+    {% show_films films=filtered_films %}
+{% else %}
+    <div class="content-text">
+        <h2>{{ title }}</h2>
+        <p>Всего фильмов: {{ films|length }}</p>
+    </div>
+    {% show_films films=films %}
+{% endif %}
+
+{% endblock %}

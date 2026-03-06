@@ -1,0 +1,12 @@
+{% load static %}
+<header>
+    <div class="header">
+        <ul class="mainmenu">
+            {% comment %} <li class="logo"><a href="{% url 'homepage:index' %}"><div class="logo"></div></a></li> {% endcomment %}
+            <li><a href="{% url 'homepage:index' %}">Главная</a></li>
+            <li><a href="{% url 'films:index' 'all' %}">Все фильмы</a></li>
+            <li><a href="{% url 'homepage:contact' %}">Контакты</a></li>
+            <li><a href="{% url 'homepage:about' %}">О проекте</a></li>
+        </ul>
+    </div>
+</header>

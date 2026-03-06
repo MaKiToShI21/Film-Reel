@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load films_tags %}
+
+{% block title %}{{ film.title }}{% endblock %}
+
+{% block content %}
+<div class="content-text">
+    <h2>{{ film.title }}</h2>
+
+    <div class="film-card">
+        {% if film.poster %}
+            <img src="{{ film.poster.url }}" class="img-article-left">
+        {% endif %}
+        
+        <p><strong>Год:</strong> {{ film.year }}</p>
+        <p><strong>Рейтинг:</strong> {{ film.rating|format_rating }}</p>
+        <p><strong>Жанр:</strong> {{ film.genre }}</p>
+        <p><strong>Описание:</strong> {{ film.description }}</p>
+        <div class="clear"></div>
+    </div>
+
+    <p class="link-read-post">
+        <a href="{% url 'films:index' 'all' %}">← Назад к списку</a>
+    </p>
+</div>
+{% endblock %}

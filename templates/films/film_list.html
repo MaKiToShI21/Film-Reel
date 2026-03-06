@@ -1,0 +1,25 @@
+{% load films_tags %}
+<ul class="list-articles">
+    {% for film in films %}
+        <li>
+            <div class="article-panel">
+                <p class="first">Жанр: {{ film.genre }}</p>
+                <p class="last">Год: {{ film.year }}</p>
+            </div>
+            
+            {% if film.poster %}
+                <img src="{{ film.poster.url }}" class="img-article-left thumb">
+            {% endif %}
+            
+            <h3>{{ film.title }}</h3>
+            <p>Рейтинг: {{ film.rating|format_rating }}</p>
+            
+            <p class="link-read-post">
+                <a href="{% url 'films:category' film.id %}">Подробнее</a>
+            </p>
+            <div class="clear"></div>
+        </li>
+    {% empty %}
+        <p class="error-message">Фильмы не найдены</p>
+    {% endfor %}
+</ul>

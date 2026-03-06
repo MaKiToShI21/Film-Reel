@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load films_tags %}
+
+{% block title %}Поиск фильмов{% endblock %}
+
+{% block content %}
+<h2>Поиск фильмов</h2>
+
+<form method="get" action="{% url 'films:search' %}">
+    <input type="text" name="q" value="{{ query }}" placeholder="Введите название фильма...">
+    <button type="submit" class="btn">Искать</button>
+</form>
+
+{% if query %}
+    <h3>Результаты поиска для "{{ query }}":</h3>
+    {% if films %}
+        {% show_films films=films %}
+    {% else %}
+        <p class="error-message">Фильмы не найдены</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
