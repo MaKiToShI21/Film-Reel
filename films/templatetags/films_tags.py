@@ -1,40 +1,68 @@
 from django import template
-from films.views import FILMS_DATA
+from films.models import Films
 
 register = template.Library()
 
-# Простой тег - возвращает список фильмов
+
 @register.simple_tag
 def get_all_films():
-    """Возвращает все фильмы"""
-    return FILMS_DATA
+    return Films.objects.all()
+
 
 @register.simple_tag
 def get_num_of_all_films():
-    """Возвращает все фильмы"""
-    return len(FILMS_DATA)
+    return Films.objects.count()
 
-# Простой тег с параметром - возвращает фильмы по жанру
+
+@register.simple_tag
+def get_num_of_published_films():
+    return Films.published.count()
+
+
 @register.simple_tag
 def get_films_by_genre(genre):
-    """Возвращает фильмы определенного жанра"""
-    return [film for film in FILMS_DATA if film['genre'].lower() == genre.lower()]
+    return Films.published.filter(genre__iexact=genre)
 
-# Включающий тег - отображает список фильмов
+
+@register.simple_tag
+def get_films_by_min_rating(min_rating):
+    return Films.published.filter(rating__gte=min_rating)
+
+
 @register.inclusion_tag('films/film_list.html')
-def show_films(films=None):
-    """Отображает список фильмов"""
+def show_films(films=None, limit=None):
     if films is None:
-        films = FILMS_DATA
+        films = Films.published.all()
+
+    if limit:
+        films = films[:limit]
+
     return {'films': films}
 
-# Фильтр - форматирует рейтинг
+
 @register.filter
 def format_rating(rating):
-    """Форматирует рейтинг"""
     if rating >= 8.5:
         return f"⭐ {rating} (Отлично)"
     elif rating >= 7.0:
         return f"⭐ {rating} (Хорошо)"
+    elif rating >= 6.0:
+        return f"⭐ {rating} (Неплохо)"
+    elif rating >= 5.0:
+        return f"⭐ {rating} (Средне)"
     else:
-        return f"⭐ {rating}"
+        return f"⭐ {rating} (Слабый)"
+
+
+@register.filter
+def rating_stars(rating):
+    full_stars = int(rating // 1)
+    half_star = rating % 1 >= 0.5
+    empty_stars = 5 - full_stars - (1 if half_star else 0)
+
+    stars = '★' * full_stars
+    if half_star:
+        stars += '½'
+    stars += '☆' * empty_stars
+
+    return stars

@@ -7,15 +7,11 @@
                 <p class="last">Год: {{ film.year }}</p>
             </div>
             
-            {% if film.poster %}
-                <img src="{{ film.poster.url }}" class="img-article-left thumb">
-            {% endif %}
-            
             <h3>{{ film.title }}</h3>
             <p>Рейтинг: {{ film.rating|format_rating }}</p>
             
             <p class="link-read-post">
-                <a href="{% url 'films:category' film.id %}">Подробнее</a>
+                <a href="{{ film.get_absolute_url }}">Подробнее</a>
             </p>
             <div class="clear"></div>
         </li>
