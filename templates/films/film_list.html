@@ -9,6 +9,20 @@
             
             <h3>{{ film.title }}</h3>
             <p>Рейтинг: {{ film.rating|format_rating }}</p>
+
+            {% with film.tags.all as tags %}
+            {% if tags %}
+            <ul class="tags-list">
+                <li>Теги:</li>
+                {% for t in tags|slice:":3" %}
+                <li><a href="{{ t.get_absolute_url }}">{{ t.tag }}</a></li>
+                {% endfor %}
+                {% if tags|length > 3 %}
+                <li>...</li>
+                {% endif %}
+            </ul>
+            {% endif %}
+            {% endwith %}
             
             <p class="link-read-post">
                 <a href="{{ film.get_absolute_url }}">Подробнее</a>

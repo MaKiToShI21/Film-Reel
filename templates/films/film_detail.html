@@ -6,19 +6,39 @@
 {% block content %}
 <div class="content-text">
     <h2>{{ film.title }}</h2>
-
+    
+    <!-- Отображение тегов -->
+    {% with film.tags.all as tags %}
+    {% if tags %}
+    <ul class="tags-list">
+        <li>Теги:</li>
+        {% for t in tags %}
+        <li><a href="{{ t.get_absolute_url }}">{{ t.tag }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    
     <div class="film-card">
         {% if film.poster %}
             <img src="{{ film.poster.url }}" class="img-article-left">
         {% endif %}
         
+        <p><strong>Категория:</strong> <a href="{{ film.cat.get_absolute_url }}">{{ film.cat.name }}</a></p>
         <p><strong>Год:</strong> {{ film.year }}</p>
         <p><strong>Рейтинг:</strong> {{ film.rating|format_rating }}</p>
         <p><strong>Жанр:</strong> {{ film.genre }}</p>
         <p><strong>Описание:</strong> {{ film.description }}</p>
+        
+        {% if film.director %}
+        <p><strong>Режиссер:</strong> {{ film.director.name }}</p>
+        <p><strong>Возраст режиссера:</strong> {{ film.director.age }} лет</p>
+        <p><strong>Количество Оскаров:</strong> {{ film.director.oscars_count }}</p>
+        {% endif %}
+        
         <div class="clear"></div>
     </div>
-
+    
     <p class="link-read-post">
         <a href="{% url 'films:index' 'all' %}">← Назад к списку</a>
     </p>
