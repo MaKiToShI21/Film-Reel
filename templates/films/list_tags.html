@@ -1,9 +1,7 @@
 {% if tags %}
-<li class="share">
-    <ul class="tags-list">
-        {% for t in tags %}
-        <li><a href="{{ t.get_absolute_url }}">{{ t.tag }}</a></li>
-        {% endfor %}
-    </ul>
-</li>
+<ul class="tags-list sidebar-tags">
+    {% for t in tags %}
+    <li><a href="{{ t.get_absolute_url }}">{{ t.tag }}</a></li>
+    {% endfor %}
+</ul>
 {% endif %}

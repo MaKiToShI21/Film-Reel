@@ -22,7 +22,6 @@ from films.views import page_not_found
 handler404 = page_not_found
 
 urlpatterns = [
-    path('', include('homepage.urls')),
-    path('films/', include('films.urls')),
     path('admin/', admin.site.urls),
+    path('', include('films.urls')),
 ]

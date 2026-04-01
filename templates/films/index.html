@@ -1,20 +1,20 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load films_tags %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="layout">
-    <aside class="sidebar">
+<div class="catalog-layout">
+    <aside class="catalog-sidebar">
         <div class="sidebar-section">
             <h3 class="sidebar-title">Категории</h3>
             <ul class="sidebar-list">
                 {% if cat_selected == 0 or cat_selected is None %}
                 <li class="selected">Все категории</li>
                 {% else %}
-                <li><a href="{% url 'films:index' 'all' %}">Все категории</a></li>
+                <li><a href="{% url 'films:home' %}">Все категории</a></li>
                 {% endif %}
-                
+
                 {% for cat in categories %}
                     {% if cat.id == cat_selected %}
                         <li class="selected">{{ cat.name }}</li>
@@ -24,247 +24,46 @@
                 {% endfor %}
             </ul>
         </div>
-        
+
         <div class="sidebar-section">
             <h3 class="sidebar-title">Теги</h3>
             {% show_all_tags %}
         </div>
     </aside>
-    
-    <main class="main-content">
-        <div class="content-text">
-            {% if request.GET.genre %}
-                {% get_films_by_genre request.GET.genre as filtered_films %}
-                <h2>Фильмы жанра "{{ request.GET.genre|capfirst }}"</h2>
-                <p class="film-count">Найдено фильмов: {{ filtered_films|length }}</p>
-                {% show_films films=filtered_films %}
-            {% else %}
-                <h2>{{ title }}</h2>
-                <p class="film-count">Всего фильмов: {{ films|length }}</p>
-                {% show_films films=films %}
-            {% endif %}
+
+    <main class="catalog-main">
+        <div class="catalog-heading">
+            <h1>{{ title }}</h1>
+            <p>Найдено фильмов: {{ films|length }}</p>
+        </div>
+
+        <div class="film-cards">
+            {% for film in films %}
+            <article class="film-list-item">
+                <a class="film-poster-link" href="{{ film.get_absolute_url }}">
+                    {% if film.poster %}
+                    <img src="{{ film.poster.url }}" alt="{{ film.title }}">
+                    {% else %}
+                    <div class="film-poster-fallback">Нет фото</div>
+                    {% endif %}
+                </a>
+
+                <div class="film-list-content">
+                    <div class="film-title-row">
+                        <h3>
+                            <span style="display: flex; justify-content: space-between">
+                                <a href="{{ film.get_absolute_url }}">{{ film.title }}</a>
+                                <span class="film-rating">&#9733; {{ film.rating|floatformat:1 }}</span>
+                            </span>
+                        </h3>
+                    </div>
+                    <p>{{ film.description|default:"Описание пока не добавлено."|truncatechars:200 }}</p>
+                </div>
+            </article>
+            {% empty %}
+            <p class="error-message">Фильмы не найдены.</p>
+            {% endfor %}
         </div>
     </main>
 </div>
-
-<style>
-.layout {
-    display: flex;
-    min-height: 100%;
-    width: 100%;
-}
-
-.sidebar {
-    width: 280px;
-    background: #f5f5f5;
-    border-right: 1px solid #e0e0e0;
-    padding: 20px 0;
-    flex-shrink: 0;
-}
-
-.sidebar-section {
-    margin-bottom: 30px;
-}
-
-.sidebar-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    padding: 0 20px 10px 20px;
-    margin: 0 0 10px 0;
-    border-bottom: 2px solid #ddd;
-}
-
-.sidebar-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.sidebar-list li {
-    margin: 0;
-    padding: 8px 20px;
-    font-size: 16px;
-}
-
-.sidebar-list li a {
-    color: #666;
-    text-decoration: none;
-    display: block;
-    transition: color 0.3s ease;
-}
-
-.sidebar-list li a:hover {
-    color: #CC0000;
-    text-decoration: none;
-}
-
-.sidebar-list li.selected {
-    color: #0059b2;
-    font-weight: bold;
-    background: #e8e8e8;
-    border-left: 3px solid #0059b2;
-}
-
-.tags-list {
-    list-style: none;
-    margin: 0;
-    padding: 0 20px;
-}
-
-.tags-list li {
-    display: inline-block;
-    margin: 0 8px 8px 0;
-}
-
-.tags-list li a {
-    display: inline-block;
-    padding: 5px 12px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    font-size: 14px;
-    color: #666;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.tags-list li a:hover {
-    background: #CC0000;
-    border-color: #CC0000;
-    color: #fff;
-    text-decoration: none;
-}
-
-.main-content {
-    flex: 1;
-    padding: 40px;
-    background: #fff;
-}
-
-.content-text {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.content-text h2 {
-    font-size: 28px;
-    color: #333;
-    margin: 0 0 20px 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #eee;
-}
-
-.film-count {
-    color: #666;
-    font-size: 14px;
-    margin: -15px 0 30px 0;
-}
-
-.films-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
-}
-
-.film-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.film-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-}
-
-.film-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
-
-.film-card-content {
-    padding: 15px;
-}
-
-.film-card h3 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-}
-
-.film-card h3 a {
-    color: #333;
-    text-decoration: none;
-}
-
-.film-card h3 a:hover {
-    color: #CC0000;
-}
-
-.film-card p {
-    margin: 0 0 10px 0;
-    color: #666;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.film-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
-    font-size: 12px;
-    color: #999;
-}
-
-@media (max-width: 768px) {
-    .layout {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .main-content {
-        padding: 20px;
-    }
-    
-    .films-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .films-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.table-page, .table-page tr {
-    height: auto;
-}
-
-.content {
-    padding: 0;
-}
-
-.left-chapters {
-    display: none;
-}
-</style>
 {% endblock %}
-
-{% comment %} .table-page, .table-page tr, .clear, .header, .logo, .mainmenu, 
-.panelitems, .langitem, .button, .table-content, .breadcrumbs,
-.control, .content-table, .list-pages, #footer {
-} {% endcomment %}

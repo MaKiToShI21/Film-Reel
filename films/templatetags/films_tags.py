@@ -1,7 +1,7 @@
 from django import template
-from django.db.models import Count, Q, F, Value, CharField, Sum, Avg, Max, Min
-from django.db.models.functions import Length, Upper
-from films.models import Films, Category, TagPost, Director
+from django.db.models import Count
+
+from films.models import Category, Films, TagPost
 
 register = template.Library()
 

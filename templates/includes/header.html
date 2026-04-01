@@ -1,12 +1,22 @@
 {% load static %}
 <header>
-    <div class="header">
-        <ul class="mainmenu">
-            {% comment %} <li class="logo"><a href="{% url 'homepage:index' %}"><div class="logo"></div></a></li> {% endcomment %}
-            <li><a href="{% url 'homepage:index' %}">Главная</a></li>
-            <li><a href="{% url 'films:index' 'all' %}">Все фильмы</a></li>
-            <li><a href="{% url 'homepage:contact' %}">Контакты</a></li>
-            <li><a href="{% url 'homepage:about' %}">О проекте</a></li>
-        </ul>
+    <div class="header header-shell">
+        <a class="header-brand" href="{% url 'films:home' %}">FilmReel</a>
+        <nav>
+            <ul class="mainmenu">
+                <li><a href="{% url 'films:home' %}">Главная</a></li>
+                <li><a href="{% url 'films:index' 'all' %}">Все фильмы</a></li>
+            </ul>
+        </nav>
+        <form class="header-search" method="get" action="{% url 'films:home' %}">
+            <input
+                type="search"
+                name="q"
+                value="{{ search_query|default:'' }}"
+                placeholder="Поиск по названию, описанию, жанру"
+                aria-label="Поиск фильмов"
+            >
+            <button type="submit">Найти</button>
+        </form>
     </div>
 </header>
