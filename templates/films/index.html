@@ -50,11 +50,9 @@
 
                 <div class="film-list-content">
                     <div class="film-title-row">
-                        <h3>
-                            <span style="display: flex; justify-content: space-between">
-                                <a href="{{ film.get_absolute_url }}">{{ film.title }}</a>
-                                <span class="film-rating">&#9733; {{ film.rating|floatformat:1 }}</span>
-                            </span>
+                        <h3 class="film-title">
+                            <a href="{{ film.get_absolute_url }}">{{ film.title }}</a>
+                            <span class="film-rating">&#9733; {{ film.rating|floatformat:1 }}</span>
                         </h3>
                     </div>
                     <p>{{ film.description|default:"Описание пока не добавлено."|truncatechars:200 }}</p>

@@ -69,7 +69,11 @@ class Films(models.Model):
     poster = models.ImageField(upload_to='films/', blank=True, null=True, verbose_name="Постер")
     time_create = models.DateTimeField(auto_now_add=True, verbose_name="Время создания")
     time_update = models.DateTimeField(auto_now=True, verbose_name="Время обновления")
-    is_published = models.BooleanField(choices=Status.choices, default=Status.DRAFT, verbose_name="Опубликовано")
+    is_published = models.BooleanField(
+        choices=tuple(map(lambda x: (bool(x[0]), x[1]), Status.choices)),
+        default=Status.DRAFT,
+        verbose_name="Опубликовано",
+    )
 
     cat = models.ForeignKey(
         Category, 

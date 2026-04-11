@@ -1,0 +1,127 @@
+:root {
+    --fr-bg: #f3f4f8;
+    --fr-surface: #ffffff;
+    --fr-border: #e5e7eb;
+    --fr-text: #111827;
+    --fr-muted: #6b7280;
+    --fr-header: #1f2937;
+    --fr-header-2: #374151;
+    --fr-accent: #f59e0b;
+    --default-button-bg: #f59e0b;
+    --default-button-hover-bg: #fbbf24;
+    --button-bg: #f59e0b;
+    --button-hover-bg: #fbbf24;
+}
+
+body {
+    background: var(--fr-bg);
+    color: var(--fr-text);
+}
+
+#header {
+    background: var(--fr-header);
+    color: #f9fafb;
+}
+
+#site-name a,
+#site-name a:visited {
+    color: #f9fafb;
+}
+
+#user-tools,
+#user-tools a,
+#user-tools a:visited {
+    color: #d1d5db;
+}
+
+#user-tools a:hover {
+    color: #ffffff;
+}
+
+div.breadcrumbs {
+    background: var(--fr-header-2);
+    color: #e5e7eb;
+}
+
+div.breadcrumbs a {
+    color: #f9fafb;
+}
+
+.module,
+.inline-group,
+.dashboard .module table,
+#changelist,
+.submit-row {
+    background: var(--fr-surface);
+    border: 1px solid var(--fr-border);
+    border-radius: 10px;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: var(--fr-header-2);
+    color: #f9fafb;
+}
+
+a:link,
+a:visited {
+    color: #0059b2;
+}
+
+a:hover {
+    color: #cc0000;
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+input[type="submit"].default,
+a.button,
+.submit-row input,
+.submit-row input.default
+.object-tools a {
+    background: var(--fr-accent);
+    border: 1px solid var(--fr-accent);
+    color: #111827;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.2;
+    min-height: 36px;
+    padding: 8px 14px;
+    text-transform: none !important;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover,
+a.button:hover,
+.submit-row input:hover,
+.object-tools a:hover {
+    background: #fbbf24;
+    border-color: #fbbf24;
+    color: #111827;
+}
+
+input[type="submit"].default:hover,
+.submit-row input.default:hover {
+    background: #fbbf24;
+    border-color: #fbbf24;
+}
+
+#changelist-filter {
+    background: var(--fr-surface);
+    border-left: 1px solid var(--fr-border);
+}
+
+#changelist-filter h2 {
+    background: var(--fr-header-2);
+    color: #f9fafb;
+}
+
+.paginator {
+    color: var(--fr-muted);
+}
