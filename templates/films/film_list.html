@@ -6,7 +6,11 @@
                 <p class="first">Жанр: {{ film.genre }}</p>
                 <p class="last">Год: {{ film.year }}</p>
             </div>
-            
+
+            {% if film.poster %}
+                <p><img class="img-article-left thumb" src="{{ film.poster.url }}" alt="{{ film.title }}"></p>
+            {% endif %}
+
             <h3>{{ film.title }}</h3>
             <p>Рейтинг: {{ film.rating|format_rating }}</p>
 
@@ -23,7 +27,7 @@
             </ul>
             {% endif %}
             {% endwith %}
-            
+
             <p class="link-read-post">
                 <a href="{{ film.get_absolute_url }}">Подробнее</a>
             </p>

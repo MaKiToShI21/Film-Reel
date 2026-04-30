@@ -1,10 +1,11 @@
 from django.contrib import admin, messages
+from django.utils.safestring import mark_safe
 
 from .models import Category, Director, FilmDetails, Films, TagPost
 
 
 admin.site.site_header = "Панель администрирования"
-admin.site.site_title = "Администраторирование FilmReel"
+admin.site.site_title = "Администрирование FilmReel"
 admin.site.index_title = "Панель управления"
 
 
@@ -30,6 +31,7 @@ class DirectorStatusFilter(admin.SimpleListFilter):
 class FilmsAdmin(admin.ModelAdmin):
     list_display = (
         "title",
+        "post_photo",
         "time_create",
         "is_published",
         "cat",
@@ -45,7 +47,7 @@ class FilmsAdmin(admin.ModelAdmin):
     actions = ["set_published", "set_draft"]
     prepopulated_fields = {"slug": ("title",)}
     filter_horizontal = ("tags",)
-    readonly_fields = ("time_create", "time_update")
+    readonly_fields = ("post_photo", "time_create", "time_update")
     fields = [
         "title",
         "slug",
@@ -53,19 +55,26 @@ class FilmsAdmin(admin.ModelAdmin):
         "rating",
         "genre",
         "description",
+        "poster",
+        "post_photo",
         "cat",
         "director",
         "tags",
-        "poster",
         "is_published",
         "time_create",
         "time_update",
     ]
 
+    @admin.display(description="Изображение")
+    def post_photo(self, film: Films):
+        if film.poster:
+            return mark_safe(f"<img src='{film.poster.url}' width='50'>")
+        return "Без фото"
+
     @admin.display(description="Краткое описание")
     def brief_info(self, film: Films):
         if not film.description:
-            return "—"
+            return "-"
         return film.description[:50] + ("..." if len(film.description) > 50 else "")
 
     @admin.display(description="Период")

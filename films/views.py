@@ -1,8 +1,9 @@
 from django.db.models import Count, Q
 from django.http import HttpResponseNotFound
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Category, Films, TagPost
+from .forms import AddFilmForm, AddFilmModelForm, UploadFileForm
+from .models import Category, Films, TagPost, UploadFiles
 
 
 def _get_categories_with_films():
@@ -52,6 +53,84 @@ def index(request, name):
         title = f"Фильмы жанра: {name}"
 
     return _render_films_index(request, title=title, films=films)
+
+
+def _create_film_from_form(form):
+    film = Films.objects.create(
+        title=form.cleaned_data["title"],
+        slug=form.cleaned_data["slug"],
+        year=form.cleaned_data["year"],
+        rating=form.cleaned_data["rating"],
+        genre=form.cleaned_data["genre"],
+        description=form.cleaned_data["description"],
+        is_published=form.cleaned_data["is_published"],
+        cat=form.cleaned_data["cat"],
+        director=form.cleaned_data["director"],
+    )
+    film.tags.set(form.cleaned_data["tags"])
+    return film
+
+
+def _redirect_after_save(film):
+    if film.is_published == Films.Status.PUBLISHED:
+        return redirect(film.get_absolute_url())
+    return redirect("films:home")
+
+
+def add_film_form(request):
+    if request.method == "POST":
+        form = AddFilmForm(request.POST)
+        if form.is_valid():
+            if Films.objects.filter(slug=form.cleaned_data["slug"]).exists():
+                form.add_error("slug", "Фильм с таким URL уже существует.")
+            else:
+                film = _create_film_from_form(form)
+                return _redirect_after_save(film)
+    else:
+        form = AddFilmForm()
+
+    return render(
+        request,
+        "films/add_film_form.html",
+        {"title": "Добавление фильма: обычная форма", "form": form},
+    )
+
+
+def add_film_model(request):
+    if request.method == "POST":
+        form = AddFilmModelForm(request.POST, request.FILES)
+        if form.is_valid():
+            film = form.save()
+            return _redirect_after_save(film)
+    else:
+        form = AddFilmModelForm()
+
+    return render(
+        request,
+        "films/add_film_model.html",
+        {"title": "Добавление фильма: форма модели", "form": form},
+    )
+
+
+def upload_file(request):
+    uploaded_file = None
+
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = UploadFiles.objects.create(file=form.cleaned_data["file"])
+    else:
+        form = UploadFileForm()
+
+    return render(
+        request,
+        "films/upload_file.html",
+        {
+            "title": "Загрузка файла",
+            "form": form,
+            "uploaded_file": uploaded_file,
+        },
+    )
 
 
 def film_detail(request, film_slug):
@@ -126,5 +205,5 @@ def show_tag_postlist(request, tag_slug):
 def page_not_found(request, exception):
     return HttpResponseNotFound(
         "<h1>Ошибка 404: Страница не найдена</h1>"
-        "<p>Проверьте правильность введённого адреса</p>"
+        "<p>Проверьте правильность введенного адреса.</p>"
     )

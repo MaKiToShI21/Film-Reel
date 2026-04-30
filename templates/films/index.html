@@ -42,9 +42,9 @@
             <article class="film-list-item">
                 <a class="film-poster-link" href="{{ film.get_absolute_url }}">
                     {% if film.poster %}
-                    <img src="{{ film.poster.url }}" alt="{{ film.title }}">
+                        <img src="{{ film.poster.url }}" alt="{{ film.title }}">
                     {% else %}
-                    <div class="film-poster-fallback">Нет фото</div>
+                        <div class="film-poster-fallback">Нет фото</div>
                     {% endif %}
                 </a>
 
