@@ -24,6 +24,12 @@
             <img src="{{ film.poster.url }}" class="img-article-left">
         {% endif %}
         
+        <p class="film-admin-actions">
+            <a href="{% url 'films:film_edit' film.pk %}">Редактировать</a>
+            ·
+            <a href="{% url 'films:film_delete' film.pk %}">Удалить</a>
+        </p>
+
         <p><strong>Категория:</strong> <a href="{{ film.cat.get_absolute_url }}">{{ film.cat.name }}</a></p>
         <p><strong>Год:</strong> {{ film.year }}</p>
         <p><strong>Рейтинг:</strong> {{ film.rating|format_rating }}</p>

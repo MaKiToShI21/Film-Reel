@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="form-page">
+    <div class="form-card">
+        <h1>{{ title }}</h1>
+        <p>Удалить фильм «<strong>{{ film.title }}</strong>»? Это действие необратимо.</p>
+        <form method="post" class="site-form">
+            {% csrf_token %}
+            <button type="submit" class="btn">Удалить</button>
+            <a href="{{ film.get_absolute_url }}">Отмена</a>
+        </form>
+    </div>
+</section>
+{% endblock %}

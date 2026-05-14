@@ -5,7 +5,7 @@
         <nav>
             <ul class="mainmenu">
                 <li><a href="{% url 'films:home' %}">Главная</a></li>
-                <li><a href="{% url 'films:index' 'all' %}">Все фильмы</a></li>
+                <li><a href="{% url 'films:about' %}">О каталоге</a></li>
             </ul>
         </nav>
         <form class="header-search" method="get" action="{% url 'films:home' %}">
