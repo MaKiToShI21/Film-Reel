@@ -57,7 +57,7 @@ class FilmsHome(DataMixin, ListView):
         search_query = self.request.GET.get("q", "").strip()
         return self.get_mixin_context(
             context,
-            title="Все фильмы",
+            title="Все опубликованные фильмы",
             cat_selected=0,
             search_query=search_query,
         )
@@ -79,7 +79,7 @@ class FilmsByGenre(DataMixin, ListView):
         name = self.kwargs["name"]
         search_query = self.request.GET.get("q", "").strip()
         if name == "all":
-            title = "Все фильмы"
+            title = "Все опубликованные фильмы"
         else:
             title = f"Фильмы жанра: {name}"
         return self.get_mixin_context(
@@ -261,8 +261,6 @@ class UploadFilePage(DataMixin, View):
 
 
 class AboutCatalog(DataMixin, TemplateView):
-    """Демонстрация TemplateView (отдельная информационная страница)."""
-
     template_name = "films/about.html"
     title_page = "О каталоге FilmReel"
 

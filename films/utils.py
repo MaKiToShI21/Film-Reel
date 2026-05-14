@@ -10,8 +10,6 @@ def get_categories_with_films():
 
 
 class DataMixin:
-    """Общий контекст и пагинация для классов представлений."""
-
     title_page = None
     paginate_by = 3
 
