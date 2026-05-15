@@ -34,7 +34,7 @@
     <main class="catalog-main">
         <div class="catalog-heading">
             <h1>{{ title }}</h1>
-            <p>Найдено фильмов: {{ films|length }}</p>
+            <p>Найдено фильмов: {{ page_obj.paginator.count }}</p>
         </div>
 
         <div class="film-cards">
@@ -42,9 +42,9 @@
             <article class="film-list-item">
                 <a class="film-poster-link" href="{{ film.get_absolute_url }}">
                     {% if film.poster %}
-                    <img src="{{ film.poster.url }}" alt="{{ film.title }}">
+                        <img src="{{ film.poster.url }}" alt="{{ film.title }}">
                     {% else %}
-                    <div class="film-poster-fallback">Нет фото</div>
+                        <div class="film-poster-fallback">Нет фото</div>
                     {% endif %}
                 </a>
 
@@ -64,4 +64,34 @@
         </div>
     </main>
 </div>
+{% endblock %}
+
+{% block navigation %}
+{% if page_obj.has_other_pages %}
+<nav class="list-pages" aria-label="Навигация по страницам">
+    <ul>
+        {% if page_obj.has_previous %}
+        <li class="page-num">
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}">&lt;</a>
+        </li>
+        {% endif %}
+
+        {% for p in paginator.page_range %}
+            {% if page_obj.number == p %}
+            <li class="page-num page-num-selected">{{ p }}</li>
+            {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+            <li class="page-num">
+                <a href="?page={{ p }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}">{{ p }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-num">
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}">&gt;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

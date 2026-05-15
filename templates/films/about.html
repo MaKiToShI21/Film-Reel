@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="content-text">
+    <h2>{{ title }}</h2>
+    <p>FilmReel — каталог фильмов.</p>
+    <p><a href="{% url 'films:home' %}">На главную</a></p>
+</section>
+{% endblock %}

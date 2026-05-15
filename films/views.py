@@ -1,130 +1,316 @@
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.http import HttpResponseNotFound
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import DetailView, FormView, ListView, TemplateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .models import Category, Films, TagPost
-
-
-def _get_categories_with_films():
-    return Category.objects.annotate(total_films=Count("films")).filter(total_films__gt=0)
+from .forms import AddFilmForm, AddFilmModelForm, UploadFileForm
+from .models import Category, Films, TagPost, UploadFiles
+from .utils import DataMixin
 
 
 def _apply_search(queryset, search_query):
     if not search_query:
         return queryset
-
+    q = search_query.strip()
+    if not q:
+        return queryset
     return queryset.filter(
-        Q(title__icontains=search_query)
-        | Q(description__icontains=search_query)
-        | Q(genre__icontains=search_query)
+        Q(title__icontains=q)
+        | Q(description__icontains=q)
+        | Q(genre__icontains=q)
     )
 
 
-def _render_films_index(request, *, title, films, cat_selected=None):
-    search_query = request.GET.get("q", "").strip()
-    films = _apply_search(films, search_query)
-
-    context = {
-        "title": title,
-        "films": films,
-        "categories": _get_categories_with_films(),
-        "cat_selected": cat_selected,
-        "search_query": search_query,
-    }
-    return render(request, "films/index.html", context)
-
-
-def home(request):
-    films = Films.published.select_related("cat", "director").prefetch_related("tags")
-    return _render_films_index(request, title="Все фильмы", films=films)
+def _create_film_from_form(form):
+    film = Films.objects.create(
+        title=form.cleaned_data["title"],
+        slug=form.cleaned_data["slug"],
+        year=form.cleaned_data["year"],
+        rating=form.cleaned_data["rating"],
+        genre=form.cleaned_data["genre"],
+        description=form.cleaned_data["description"],
+        is_published=form.cleaned_data["is_published"],
+        cat=form.cleaned_data["cat"],
+        director=form.cleaned_data["director"],
+    )
+    film.tags.set(form.cleaned_data["tags"])
+    return film
 
 
-def index(request, name):
-    if name == "all":
-        films = Films.published.select_related("cat", "director").prefetch_related("tags")
-        title = "Все фильмы"
-    else:
-        films = (
-            Films.published.filter(genre__iexact=name)
+def _published_films_qs():
+    return Films.published.select_related("cat", "director").prefetch_related("tags")
+
+
+class FilmsHome(DataMixin, ListView):
+    template_name = "films/index.html"
+    context_object_name = "films"
+
+    def get_queryset(self):
+        qs = _published_films_qs()
+        return _apply_search(qs, self.request.GET.get("q", ""))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get("q", "").strip()
+        return self.get_mixin_context(
+            context,
+            title="Все опубликованные фильмы",
+            cat_selected=0,
+            search_query=search_query,
+        )
+
+
+class FilmsByGenre(DataMixin, ListView):
+    template_name = "films/index.html"
+    context_object_name = "films"
+
+    def get_queryset(self):
+        qs = _published_films_qs()
+        name = self.kwargs["name"]
+        if name != "all":
+            qs = qs.filter(genre__iexact=name)
+        return _apply_search(qs, self.request.GET.get("q", ""))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        name = self.kwargs["name"]
+        search_query = self.request.GET.get("q", "").strip()
+        if name == "all":
+            title = "Все опубликованные фильмы"
+        else:
+            title = f"Фильмы жанра: {name}"
+        return self.get_mixin_context(
+            context,
+            title=title,
+            cat_selected=0,
+            search_query=search_query,
+        )
+
+
+class FilmsByYear(DataMixin, ListView):
+    template_name = "films/index.html"
+    context_object_name = "films"
+
+    def get_queryset(self):
+        qs = (
+            Films.published.filter(year=self.kwargs["film_year"])
             .select_related("cat", "director")
             .prefetch_related("tags")
         )
-        title = f"Фильмы жанра: {name}"
+        return _apply_search(qs, self.request.GET.get("q", ""))
 
-    return _render_films_index(request, title=title, films=films)
-
-
-def film_detail(request, film_slug):
-    film = get_object_or_404(
-        Films.objects.select_related("cat", "director").prefetch_related("tags"),
-        slug=film_slug,
-        is_published=Films.Status.PUBLISHED,
-    )
-
-    context = {
-        "title": film.title,
-        "film": film,
-    }
-    return render(request, "films/film_detail.html", context)
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        year = self.kwargs["film_year"]
+        search_query = self.request.GET.get("q", "").strip()
+        return self.get_mixin_context(
+            context,
+            title=f"Фильмы {year} года",
+            cat_selected=0,
+            search_query=search_query,
+        )
 
 
-def films_by_year(request, film_year):
-    films = (
-        Films.published.filter(year=film_year)
-        .select_related("cat", "director")
-        .prefetch_related("tags")
-    )
-    return _render_films_index(
-        request,
-        title=f"Фильмы {film_year} года",
-        films=films,
-    )
+class FilmsByRating(DataMixin, ListView):
+    template_name = "films/index.html"
+    context_object_name = "films"
+
+    def get_queryset(self):
+        qs = (
+            Films.published.filter(rating__gte=self.kwargs["film_rating"])
+            .select_related("cat", "director")
+            .prefetch_related("tags")
+        )
+        return _apply_search(qs, self.request.GET.get("q", ""))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        rating = self.kwargs["film_rating"]
+        search_query = self.request.GET.get("q", "").strip()
+        return self.get_mixin_context(
+            context,
+            title=f"Фильмы с рейтингом от {rating}",
+            cat_selected=0,
+            search_query=search_query,
+        )
 
 
-def films_by_rating(request, film_rating):
-    films = (
-        Films.published.filter(rating__gte=film_rating)
-        .select_related("cat", "director")
-        .prefetch_related("tags")
-    )
-    return _render_films_index(
-        request,
-        title=f"Фильмы с рейтингом от {film_rating}",
-        films=films,
-    )
+class FilmsCategory(DataMixin, ListView):
+    template_name = "films/index.html"
+    context_object_name = "films"
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.category = get_object_or_404(Category, slug=self.kwargs["cat_slug"])
+
+    def get_queryset(self):
+        qs = (
+            Films.published.filter(cat_id=self.category.pk)
+            .select_related("cat", "director")
+            .prefetch_related("tags")
+        )
+        return _apply_search(qs, self.request.GET.get("q", ""))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get("q", "").strip()
+        return self.get_mixin_context(
+            context,
+            title=f"Категория: {self.category.name}",
+            cat_selected=self.category.pk,
+            search_query=search_query,
+        )
 
 
-def show_category(request, cat_slug):
-    category = get_object_or_404(Category, slug=cat_slug)
-    films = (
-        Films.published.filter(cat_id=category.pk)
-        .select_related("cat", "director")
-        .prefetch_related("tags")
-    )
+class FilmsTagList(DataMixin, ListView):
+    template_name = "films/index.html"
+    context_object_name = "films"
 
-    return _render_films_index(
-        request,
-        title=f"Категория: {category.name}",
-        films=films,
-        cat_selected=category.pk,
-    )
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.tag = get_object_or_404(TagPost, slug=self.kwargs["tag_slug"])
+
+    def get_queryset(self):
+        qs = self.tag.films.filter(is_published=Films.Status.PUBLISHED).select_related(
+            "cat",
+            "director",
+        ).prefetch_related("tags")
+        return _apply_search(qs, self.request.GET.get("q", ""))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get("q", "").strip()
+        return self.get_mixin_context(
+            context,
+            title=f"Тег: {self.tag.tag}",
+            cat_selected=None,
+            search_query=search_query,
+        )
 
 
-def show_tag_postlist(request, tag_slug):
-    tag = get_object_or_404(TagPost, slug=tag_slug)
-    films = tag.films.filter(is_published=Films.Status.PUBLISHED).select_related(
-        "cat", "director"
-    )
+class FilmDetail(DataMixin, DetailView):
+    model = Films
+    template_name = "films/film_detail.html"
+    context_object_name = "film"
+    slug_url_kwarg = "film_slug"
 
-    return _render_films_index(
-        request,
-        title=f"Тег: {tag.tag}",
-        films=films,
-    )
+    def get_object(self, queryset=None):
+        return get_object_or_404(
+            Films.published.select_related("cat", "director").prefetch_related("tags"),
+            slug=self.kwargs[self.slug_url_kwarg],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title=context["film"].title)
+
+
+class AddFilmFormPage(DataMixin, FormView):
+    form_class = AddFilmForm
+    template_name = "films/add_film_form.html"
+    title_page = "Добавление фильма: обычная форма"
+
+    def form_valid(self, form):
+        if Films.objects.filter(slug=form.cleaned_data["slug"]).exists():
+            form.add_error("slug", "Фильм с таким URL уже существует.")
+            return self.form_invalid(form)
+        film = _create_film_from_form(form)
+        if film.is_published == Films.Status.PUBLISHED:
+            return redirect(film.get_absolute_url())
+        return redirect("films:home")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context)
+
+
+class AddFilmModelPage(DataMixin, CreateView):
+    form_class = AddFilmModelForm
+    template_name = "films/add_film_model.html"
+    title_page = "Добавление фильма: форма модели"
+
+    def get_success_url(self):
+        film = self.object
+        if film.is_published == Films.Status.PUBLISHED:
+            return film.get_absolute_url()
+        return reverse_lazy("films:home")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context)
+
+
+class UploadFilePage(DataMixin, View):
+    title_page = "Загрузка файла"
+
+    def get(self, request):
+        form = UploadFileForm()
+        context = self.get_mixin_context({"form": form, "uploaded_file": None})
+        return render(request, "films/upload_file.html", context)
+
+    def post(self, request):
+        form = UploadFileForm(request.POST, request.FILES)
+        uploaded_file = None
+        if form.is_valid():
+            uploaded_file = UploadFiles.objects.create(file=form.cleaned_data["file"])
+        context = self.get_mixin_context({"form": form, "uploaded_file": uploaded_file})
+        return render(request, "films/upload_file.html", context)
+
+
+class AboutCatalog(DataMixin, TemplateView):
+    template_name = "films/about.html"
+    title_page = "О каталоге FilmReel"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context)
+
+
+class FilmUpdatePage(DataMixin, UpdateView):
+    model = Films
+    fields = [
+        "title",
+        "year",
+        "rating",
+        "genre",
+        "description",
+        "poster",
+        "is_published",
+        "cat",
+        "director",
+        "tags",
+    ]
+    template_name = "films/add_film_model.html"
+    title_page = "Редактирование фильма"
+
+    def get_success_url(self):
+        film = self.object
+        if film.is_published == Films.Status.PUBLISHED:
+            return film.get_absolute_url()
+        return reverse_lazy("films:home")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context)
+
+
+class FilmDeletePage(DataMixin, DeleteView):
+    model = Films
+    template_name = "films/film_confirm_delete.html"
+    context_object_name = "film"
+    success_url = reverse_lazy("films:home")
+    title_page = "Удаление фильма"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context)
 
 
 def page_not_found(request, exception):
     return HttpResponseNotFound(
         "<h1>Ошибка 404: Страница не найдена</h1>"
-        "<p>Проверьте правильность введённого адреса</p>"
+        "<p>Проверьте правильность введенного адреса.</p>"
     )
