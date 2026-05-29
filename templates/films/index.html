@@ -55,6 +55,10 @@
                             <span class="film-rating">&#9733; {{ film.rating|floatformat:1 }}</span>
                         </h3>
                     </div>
+                    <p class="film-meta">
+                        Категория: {{ film.cat.name|default:"—" }}
+                        | автор: {{ film.author.username|default:"неизвестен" }}
+                    </p>
                     <p>{{ film.description|default:"Описание пока не добавлено."|truncatechars:200 }}</p>
                 </div>
             </article>

@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 
@@ -102,6 +103,14 @@ class Films(models.Model):
         blank=True,
         related_name="films",
         verbose_name="Режиссер",
+    )
+    author = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        related_name="films",
+        null=True,
+        default=None,
+        verbose_name="Автор",
     )
 
     objects = models.Manager()

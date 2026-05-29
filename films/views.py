@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
@@ -41,7 +42,7 @@ def _create_film_from_form(form):
 
 
 def _published_films_qs():
-    return Films.published.select_related("cat", "director").prefetch_related("tags")
+    return Films.published.select_related("cat", "director", "author").prefetch_related("tags")
 
 
 class FilmsHome(DataMixin, ListView):
@@ -227,10 +228,15 @@ class AddFilmFormPage(DataMixin, FormView):
         return self.get_mixin_context(context)
 
 
-class AddFilmModelPage(DataMixin, CreateView):
+class AddFilmModelPage(LoginRequiredMixin, PermissionRequiredMixin, DataMixin, CreateView):
     form_class = AddFilmModelForm
     template_name = "films/add_film_model.html"
     title_page = "Добавление фильма: форма модели"
+    permission_required = "films.add_films"
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
     def get_success_url(self):
         film = self.object
@@ -243,8 +249,10 @@ class AddFilmModelPage(DataMixin, CreateView):
         return self.get_mixin_context(context)
 
 
-class UploadFilePage(DataMixin, View):
+class UploadFilePage(PermissionRequiredMixin, DataMixin, View):
     title_page = "Загрузка файла"
+    permission_required = "films.view_films"
+    raise_exception = True
 
     def get(self, request):
         form = UploadFileForm()
@@ -260,7 +268,7 @@ class UploadFilePage(DataMixin, View):
         return render(request, "films/upload_file.html", context)
 
 
-class AboutCatalog(DataMixin, TemplateView):
+class AboutCatalog(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = "films/about.html"
     title_page = "О каталоге FilmReel"
 
@@ -269,7 +277,7 @@ class AboutCatalog(DataMixin, TemplateView):
         return self.get_mixin_context(context)
 
 
-class FilmUpdatePage(DataMixin, UpdateView):
+class FilmUpdatePage(PermissionRequiredMixin, DataMixin, UpdateView):
     model = Films
     fields = [
         "title",
@@ -285,6 +293,7 @@ class FilmUpdatePage(DataMixin, UpdateView):
     ]
     template_name = "films/add_film_model.html"
     title_page = "Редактирование фильма"
+    permission_required = "films.change_films"
 
     def get_success_url(self):
         film = self.object
@@ -297,12 +306,13 @@ class FilmUpdatePage(DataMixin, UpdateView):
         return self.get_mixin_context(context)
 
 
-class FilmDeletePage(DataMixin, DeleteView):
+class FilmDeletePage(PermissionRequiredMixin, DataMixin, DeleteView):
     model = Films
     template_name = "films/film_confirm_delete.html"
     context_object_name = "film"
     success_url = reverse_lazy("films:home")
     title_page = "Удаление фильма"
+    permission_required = "films.delete_films"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

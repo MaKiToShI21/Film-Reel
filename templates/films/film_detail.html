@@ -25,9 +25,13 @@
         {% endif %}
         
         <p class="film-admin-actions">
+            {% if perms.films.change_films %}
             <a href="{% url 'films:film_edit' film.pk %}">Редактировать</a>
-            ·
+            {% endif %}
+            {% if perms.films.delete_films %}
+            {% if perms.films.change_films %}·{% endif %}
             <a href="{% url 'films:film_delete' film.pk %}">Удалить</a>
+            {% endif %}
         </p>
 
         <p><strong>Категория:</strong> <a href="{{ film.cat.get_absolute_url }}">{{ film.cat.name }}</a></p>

@@ -57,7 +57,7 @@ img {
 
 .header-shell {
     display: grid;
-    grid-template-columns: auto 1fr minmax(320px, 540px);
+    grid-template-columns: auto 1fr minmax(220px, 420px) auto;
     align-items: center;
     gap: 24px;
     padding: 14px 28px;
@@ -492,6 +492,94 @@ div.article-panel p.last {
 .film-admin-actions {
     margin: 0 0 12px;
     font-size: 0.95rem;
+}
+
+.header-auth {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    color: #f9fafb;
+}
+
+.header-auth a {
+    color: #fbbf24;
+}
+
+.logout-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.logout-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: #fbbf24;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.logout-link:hover {
+    color: #fde68a;
+    text-decoration: underline;
+}
+
+.auth-form {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.auth-form .form-label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.auth-form .form-input,
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.auth-form input[type="file"],
+.auth-form input[type="date"],
+.auth-form select {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.auth-form button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #f59e0b;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.form-error {
+    color: #b91c1c;
+    font-size: 0.9rem;
+}
+
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+}
+
+.film-meta {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: 0 0 8px;
 }
 
 @media (max-width: 980px) {
