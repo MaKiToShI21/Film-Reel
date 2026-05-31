@@ -14,8 +14,6 @@ from films.models import Films, Category, TagPost, Director
 
 
 def demo_advanced_orm():
-    """Демонстрация продвинутых методов ORM"""
-
     print("1. Класс Q (сложные условия)")
 
     print("\nФильмы с рейтингом >= 8.5 ИЛИ жанром 'Комедия':")

@@ -1,0 +1,16 @@
+{% if widget.is_initial %}
+<div class="film-form-poster-current">
+    <p class="film-form-poster-caption">{{ widget.initial_text }}</p>
+    <img src="{{ widget.value.url }}" alt="Текущий постер" class="film-form-poster-preview">
+    {% if not widget.required %}
+    <label class="film-form-poster-clear" for="{{ widget.checkbox_id }}">
+        <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}"{% if widget.attrs.disabled %} disabled{% endif %}>
+        <span>{{ widget.clear_checkbox_label }}</span>
+    </label>
+    {% endif %}
+</div>
+{% endif %}
+<div class="film-form-poster-change">
+    <span class="film-form-poster-change-label">{{ widget.input_text }}</span>
+    <input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+</div>

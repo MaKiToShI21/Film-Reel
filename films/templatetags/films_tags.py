@@ -1,7 +1,8 @@
 from django import template
 from django.db.models import Count
 
-from films.models import Category, Films, TagPost
+from films.models import Films, TagPost
+from films.permissions import can_add_film, can_change_film, can_delete_film
 
 register = template.Library()
 
@@ -23,7 +24,7 @@ def get_num_of_published_films():
 
 @register.simple_tag
 def get_films_by_genre(genre):
-    return Films.published.filter(genre__iexact=genre)
+    return Films.published.filter(genres__name__iexact=genre).distinct()
 
 
 @register.simple_tag
@@ -42,13 +43,6 @@ def show_films(films=None, limit=None):
     return {'films': films}
 
 
-@register.inclusion_tag('films/list_categories.html')
-def show_categories(cat_selected_id=0):
-    cats = Category.objects.annotate(
-        total_films=Count('films')
-    ).filter(total_films__gt=0)
-    return {"cats": cats, "cat_selected": cat_selected_id}
-
 
 @register.inclusion_tag('films/list_tags.html')
 def show_all_tags():
@@ -56,6 +50,21 @@ def show_all_tags():
         total_films=Count('films')
     ).filter(total_films__gt=0)
     return {"tags": tags}
+
+
+@register.filter
+def user_can_add_film(user):
+    return can_add_film(user)
+
+
+@register.filter
+def user_can_change_film(film, user):
+    return can_change_film(user, film)
+
+
+@register.filter
+def user_can_delete_film(film, user):
+    return can_delete_film(user, film)
 
 
 @register.filter

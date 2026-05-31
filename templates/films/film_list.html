@@ -3,7 +3,9 @@
     {% for film in films %}
         <li>
             <div class="article-panel">
-                <p class="first">Жанр: {{ film.genre }}</p>
+                <p class="first">Жанр:
+                    {% for genre in film.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                </p>
                 <p class="last">Год: {{ film.year }}</p>
             </div>
 

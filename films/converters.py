@@ -1,3 +1,13 @@
+class UnicodeSlugConverter:
+    regex = "[-\w]+"
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
+
+
 class FourDigitYearConverter:
     regex = '[0-9]{4}'
     

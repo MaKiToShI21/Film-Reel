@@ -1,0 +1,11 @@
+<div class="profile-photo-widget">
+{% if widget.is_initial %}
+    {% if not widget.required %}
+    <label class="profile-photo-clear" for="{{ widget.checkbox_id }}">
+        <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}"{% if widget.attrs.disabled %} disabled{% endif %}>
+        <span>{{ widget.clear_checkbox_label }}</span>
+    </label>
+    {% endif %}
+{% endif %}
+    <input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+</div>
