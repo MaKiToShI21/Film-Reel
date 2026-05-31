@@ -8,12 +8,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views import View
-from django.views.generic import DetailView, FormView, ListView, TemplateView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .forms import AddFilmForm, AddFilmModelForm, FilmCommentForm, UploadFileForm, generate_unique_slug
-from .models import FilmComment, Films, TagPost, UploadFiles
+from .forms import AddFilmModelForm, FilmCommentForm
+from .models import FilmComment, Films, TagPost
 from .comment_utils import (
     film_comments_enabled,
     get_comment_reaction_counts,
@@ -80,21 +79,6 @@ def _apply_search(queryset, search_query):
     return queryset.filter(pk__in=matching_pks)
 
 
-def _create_film_from_form(form):
-    film = Films.objects.create(
-        title=form.cleaned_data["title"],
-        slug=generate_unique_slug(form.cleaned_data["title"]),
-        year=form.cleaned_data["year"],
-        rating=0.0,
-        description=form.cleaned_data["description"],
-        is_published=Films.Status.DRAFT,
-    )
-    film.genres.set(form.cleaned_data["genres"])
-    film.directors.set(form.cleaned_data["directors"])
-    film.tags.set(form.cleaned_data["tags"])
-    return film
-
-
 def _prepare_catalog_qs(qs, request):
     qs = apply_catalog_filters(qs, request)
     qs = _apply_search(qs, request.GET.get("q", ""))
@@ -122,7 +106,6 @@ class FilmsHome(DataMixin, ListView):
         return self.get_mixin_context(
             context,
             title="Все опубликованные фильмы",
-            cat_selected=0,
             search_query=search_query,
         )
 
@@ -149,7 +132,6 @@ class FilmsByGenre(DataMixin, ListView):
         return self.get_mixin_context(
             context,
             title=title,
-            cat_selected=0,
             search_query=search_query,
         )
 
@@ -173,7 +155,6 @@ class FilmsByYear(DataMixin, ListView):
         return self.get_mixin_context(
             context,
             title=f"Фильмы {year} года",
-            cat_selected=0,
             search_query=search_query,
         )
 
@@ -199,7 +180,6 @@ class FilmsByRating(DataMixin, ListView):
         return self.get_mixin_context(
             context,
             title=f"Фильмы с рейтингом от {rating}",
-            cat_selected=0,
             search_query=search_query,
         )
 
@@ -226,7 +206,6 @@ class FilmsTagList(DataMixin, ListView):
         return self.get_mixin_context(
             context,
             title=f"Тег: {self.tag.tag}",
-            cat_selected=None,
             search_query=search_query,
             path_tag_id=self.tag.id,
         )
@@ -271,27 +250,6 @@ class FilmDetail(DataMixin, DetailView):
         return self.get_mixin_context(context, title=film.title)
 
 
-class AddFilmFormPage(LoginRequiredMixin, DataMixin, FormView):
-    form_class = AddFilmForm
-    template_name = "films/add_film_form.html"
-    title_page = "Добавление фильма: обычная форма"
-
-    def form_valid(self, form):
-        if Films.objects.filter(slug=generate_unique_slug(form.cleaned_data["title"])).exists():
-            form.add_error("title", "Фильм с таким названием уже существует.")
-            return self.form_invalid(form)
-        film = _create_film_from_form(form)
-        film.author = self.request.user
-        film.save(update_fields=["author"])
-        if film.is_published == Films.Status.PUBLISHED:
-            return redirect(film.get_absolute_url())
-        return redirect("films:home")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return self.get_mixin_context(context)
-
-
 class AddFilmModelPage(LoginRequiredMixin, DataMixin, CreateView):
     form_class = AddFilmModelForm
     template_name = "films/film_form.html"
@@ -316,23 +274,6 @@ class AddFilmModelPage(LoginRequiredMixin, DataMixin, CreateView):
             cancel_url=reverse("films:home"),
             form_subtitle="Заполните данные о фильме для каталога FilmReel.",
         )
-
-
-class UploadFilePage(LoginRequiredMixin, DataMixin, View):
-    title_page = "Загрузка файла"
-
-    def get(self, request):
-        form = UploadFileForm()
-        context = self.get_mixin_context({"form": form, "uploaded_file": None})
-        return render(request, "films/upload_file.html", context)
-
-    def post(self, request):
-        form = UploadFileForm(request.POST, request.FILES)
-        uploaded_file = None
-        if form.is_valid():
-            uploaded_file = UploadFiles.objects.create(file=form.cleaned_data["file"])
-        context = self.get_mixin_context({"form": form, "uploaded_file": uploaded_file})
-        return render(request, "films/upload_file.html", context)
 
 
 class AboutCatalog(DataMixin, TemplateView):

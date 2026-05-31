@@ -58,19 +58,9 @@ urlpatterns = [
         name="tag",
     ),
     path(
-        "add-form/",
-        views.AddFilmFormPage.as_view(),
-        name="add_film_form",
-    ),
-    path(
         "add-model/",
         views.AddFilmModelPage.as_view(),
         name="add_film_model",
-    ),
-    path(
-        "upload-file/",
-        views.UploadFilePage.as_view(),
-        name="upload_file",
     ),
     path(
         "my-films/",

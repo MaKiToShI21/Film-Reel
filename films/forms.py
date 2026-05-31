@@ -1,5 +1,4 @@
 from datetime import date
-import re
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -25,13 +24,6 @@ class FilmPosterWidget(forms.ClearableFileInput):
     clear_checkbox_label = "Очистить"
     initial_text = "На данный момент:"
     input_text = "Изменить"
-
-
-def validate_film_title(value):
-    if not re.fullmatch(r"[A-Za-zА-Яа-яЁё0-9\s:\-!?,.()]+", value):
-        raise ValidationError(
-            "Название может содержать только буквы, цифры, пробелы и базовые знаки пунктуации."
-        )
 
 
 CYRILLIC_TO_LATIN = {
@@ -88,43 +80,6 @@ def generate_unique_slug(title, instance_pk=None):
             return slug
         counter += 1
         slug = f"{base}-{counter}"
-
-
-class AddFilmForm(forms.Form):
-    title = forms.CharField(max_length=255, label="Название", validators=[validate_film_title])
-    year = forms.IntegerField(
-        min_value=1888,
-        max_value=date.today().year,
-        label="Год выпуска",
-        widget=forms.TextInput(
-            attrs={
-                "class": "film-form-input",
-                "inputmode": "numeric",
-                "maxlength": "4",
-                "pattern": r"\d{4}",
-            }
-        ),
-    )
-    description = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 5, "class": "film-form-input"}),
-        label="Описание",
-    )
-    genres = forms.ModelMultipleChoiceField(
-        queryset=Genre.objects.order_by("name"),
-        label="Жанры",
-        widget=PICKER_WIDGET,
-    )
-    directors = forms.ModelMultipleChoiceField(
-        queryset=Director.objects.order_by("name"),
-        required=False,
-        label="Режиссёры",
-        widget=PICKER_WIDGET,
-    )
-    tags = forms.ModelMultipleChoiceField(
-        queryset=TagPost.objects.order_by("tag"),
-        label="Теги",
-        widget=PICKER_WIDGET,
-    )
 
 
 class AddFilmModelForm(forms.ModelForm):
@@ -289,10 +244,6 @@ class AddFilmModelForm(forms.ModelForm):
             instance.tags.set(self.cleaned_data.get("tags", []))
             self._save_details(instance)
         return instance
-
-
-class UploadFileForm(forms.Form):
-    file = forms.FileField(label="Файл")
 
 
 class FilmCommentForm(forms.Form):

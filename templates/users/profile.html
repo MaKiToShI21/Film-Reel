@@ -3,8 +3,8 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<section class="auth-page profile-page">
-    <div class="auth-card auth-card--wide profile-card">
+<section class="auth-page">
+    <div class="auth-card auth-card--wide">
         <header class="auth-header profile-header">
             <div class="profile-avatar">
                 <img
@@ -20,7 +20,7 @@
             {% endif %}
         </header>
 
-        <form method="post" enctype="multipart/form-data" class="auth-form-body profile-form" novalidate>
+        <form method="post" enctype="multipart/form-data" class="auth-form-body" novalidate>
             {% csrf_token %}
 
             {% if form.non_field_errors %}
@@ -31,7 +31,7 @@
             </ul>
             {% endif %}
 
-            <div class="auth-field profile-photo-field{% if form.photo.errors %} auth-field--error{% endif %}">
+            <div class="auth-field{% if form.photo.errors %} auth-field--error{% endif %}">
                 <label class="auth-label" for="{{ form.photo.id_for_label }}">{{ form.photo.label }}</label>
                 <div class="profile-photo-box">
                     {{ form.photo }}

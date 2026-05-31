@@ -11,10 +11,6 @@ def can_manage_all_films(user):
     return user.is_authenticated and (user.is_superuser or is_moderator(user))
 
 
-def can_add_film(user):
-    return user.is_authenticated
-
-
 def can_change_film(user, film):
     if not user.is_authenticated:
         return False

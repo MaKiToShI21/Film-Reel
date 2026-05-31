@@ -7,7 +7,7 @@
     <div class="form-card">
         <h1>{{ title }}</h1>
         <p>Удалить фильм «<strong>{{ film.title }}</strong>»? Это действие необратимо.</p>
-        <form method="post" class="site-form">
+        <form method="post">
             {% csrf_token %}
             {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}">

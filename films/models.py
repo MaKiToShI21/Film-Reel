@@ -1,6 +1,3 @@
-import os
-import uuid
-
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -8,6 +5,9 @@ from django.urls import reverse
 
 
 def upload_file_to(instance, filename):
+    import os
+    import uuid
+
     ext = os.path.splitext(filename)[1]
     return f"uploads_model/{uuid.uuid4()}{ext}"
 
@@ -266,16 +266,3 @@ class FilmCommentReaction(models.Model):
 
     def __str__(self):
         return f"{self.comment_id}: {self.value}"
-
-
-class UploadFiles(models.Model):
-    file = models.FileField(upload_to=upload_file_to, verbose_name="Файл")
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Загружен")
-
-    class Meta:
-        db_table = "upload_files"
-        verbose_name = "Загруженный файл"
-        verbose_name_plural = "Загруженные файлы"
-
-    def __str__(self):
-        return os.path.basename(self.file.name)
