@@ -393,6 +393,11 @@ def _get_accessible_film(request, film_slug):
 
 @require_POST
 def rate_film(request, film_slug):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"error": "Войдите, чтобы оценить фильм."},
+            status=403,
+        )
     film = _get_accessible_film(request, film_slug)
     rater_key = get_rater_key(request)
     if request.POST.get("action") == "cancel":

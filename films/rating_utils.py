@@ -12,6 +12,8 @@ def get_rater_key(request):
 
 
 def get_user_film_rating(request, film):
+    if not request.user.is_authenticated:
+        return None
     rating = FilmRating.objects.filter(
         film_id=film.pk,
         rater_key=get_rater_key(request),

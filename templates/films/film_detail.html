@@ -18,6 +18,8 @@
                 class="film-rate-bar"
                 id="film-rate-bar"
                 data-rate-url="{% url 'films:film_rate' film.slug %}"
+                data-login-url="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}"
+                data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
                 data-user-rating="{% if user_rating %}{% localize off %}{{ user_rating }}{% endlocalize %}{% endif %}"
             >
                 <div class="film-rate-bar-label">
@@ -256,10 +258,20 @@
     const ratePrompt = document.getElementById("film-rate-prompt");
     const rateCancel = document.getElementById("film-rate-cancel");
     const rateUrl = bar.dataset.rateUrl;
+    const loginUrl = bar.dataset.loginUrl;
+    const isAuthenticated = bar.dataset.isAuthenticated === "true";
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value
         || document.cookie.split("; ").find(row => row.startsWith("csrftoken="))?.split("=")[1];
 
     let userRating = bar.dataset.userRating ? Number(bar.dataset.userRating) : 0;
+
+    function requireAuth() {
+        if (!isAuthenticated && loginUrl) {
+            window.location.href = loginUrl;
+            return false;
+        }
+        return true;
+    }
     let hoverScore = 0;
 
     function paintStars() {
@@ -301,6 +313,10 @@
             body: body.toString(),
         }).then(function (response) {
             return response.json().then(function (data) {
+                if (response.status === 403 && loginUrl) {
+                    window.location.href = loginUrl;
+                    return null;
+                }
                 if (!response.ok) {
                     throw new Error(data.error || "Не удалось сохранить оценку.");
                 }
@@ -332,11 +348,17 @@
 
     stars.forEach(function (star) {
         star.addEventListener("click", function () {
+            if (!requireAuth()) {
+                return;
+            }
             const score = Number(star.dataset.score);
             const body = new URLSearchParams({ score: String(score) });
 
             postRating(body)
                 .then(function (data) {
+                    if (!data) {
+                        return;
+                    }
                     userRating = Number(data.user_rating);
                     ratingValue.textContent = formatRating(Number(data.rating));
                     hoverScore = 0;
@@ -353,10 +375,16 @@
 
     if (rateCancel) {
         rateCancel.addEventListener("click", function () {
+            if (!requireAuth()) {
+                return;
+            }
             const body = new URLSearchParams({ action: "cancel" });
 
             postRating(body)
                 .then(function (data) {
+                    if (!data) {
+                        return;
+                    }
                     userRating = 0;
                     bar.dataset.userRating = "";
                     ratingValue.textContent = formatRating(Number(data.rating));
