@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="film-form-page">
+    <div class="film-form-card">
+        <header class="film-form-header">
+            <h1>{{ title }}</h1>
+            {% if form_subtitle %}
+            <p class="film-form-subtitle">{{ form_subtitle }}</p>
+            {% endif %}
+        </header>
+
+        <form action="" method="post" enctype="multipart/form-data" class="film-form">
+            {% csrf_token %}
+            {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <ul class="film-form-errors film-form-errors--global">
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <fieldset class="film-form-section">
+                <legend class="film-form-section-title">Основная информация</legend>
+                <div class="film-form-grid">
+                    {% include 'films/form_field.html' with field=form.title %}
+                    {% include 'films/form_field.html' with field=form.year %}
+                </div>
+                {% include 'films/form_poster_field.html' with field=form.poster %}
+                {% include 'films/form_field.html' with field=form.description %}
+            </fieldset>
+
+            <fieldset class="film-form-section">
+                <legend class="film-form-section-title">Технические детали</legend>
+                <div class="film-form-grid">
+                    {% include 'films/form_field.html' with field=form.budget %}
+                    {% include 'films/form_field.html' with field=form.box_office %}
+                </div>
+                <div class="film-form-grid">
+                    {% include 'films/form_field.html' with field=form.duration %}
+                    {% include 'films/form_field.html' with field=form.filming_location %}
+                </div>
+            </fieldset>
+
+            <fieldset class="film-form-section">
+                <legend class="film-form-section-title">Классификация</legend>
+                {% include 'films/form_picker_field.html' with field=form.genres %}
+                {% include 'films/form_picker_field.html' with field=form.directors %}
+                {% include 'films/form_picker_field.html' with field=form.tags %}
+            </fieldset>
+
+            <div class="film-form-actions">
+                <button type="submit" class="btn film-form-submit">{{ submit_label }}</button>
+                <a href="{{ cancel_url }}" class="film-form-cancel">Отмена</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

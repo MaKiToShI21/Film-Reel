@@ -5,10 +5,22 @@
         <nav>
             <ul class="mainmenu">
                 <li><a href="{% url 'films:home' %}">Главная</a></li>
-                <li><a href="{% url 'films:about' %}">О каталоге</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'films:my_films' %}">Мои фильмы</a></li>
+                {% endif %}
+                <li><a href="{% url 'films:about' %}">О нас</a></li>
             </ul>
         </nav>
         <form class="header-search" method="get" action="{% url 'films:home' %}">
+            {% for genre in selected_genres %}
+            <input type="hidden" name="genre" value="{{ genre }}">
+            {% endfor %}
+            {% for director_id in selected_directors %}
+            <input type="hidden" name="director" value="{{ director_id }}">
+            {% endfor %}
+            {% for tag_id in selected_tags %}
+            <input type="hidden" name="tag" value="{{ tag_id }}">
+            {% endfor %}
             <input
                 type="search"
                 name="q"
@@ -20,7 +32,14 @@
         </form>
         <div class="header-auth">
             {% if user.is_authenticated %}
-            <a href="{% url 'users:profile' %}">{{ user.username }}</a>
+            <a href="{% url 'users:profile' %}" class="header-user-link">
+                <img
+                    src="{% if user.photo %}{{ user.photo.url }}{% else %}{{ default_user_image }}{% endif %}"
+                    alt=""
+                    class="header-user-avatar"
+                >
+                <span>{{ user.username }}</span>
+            </a>
             |
             <form class="logout-form" method="post" action="{% url 'users:logout' %}">
                 {% csrf_token %}

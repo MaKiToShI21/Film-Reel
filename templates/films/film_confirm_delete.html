@@ -7,10 +7,15 @@
     <div class="form-card">
         <h1>{{ title }}</h1>
         <p>Удалить фильм «<strong>{{ film.title }}</strong>»? Это действие необратимо.</p>
-        <form method="post" class="site-form">
+        <form method="post">
             {% csrf_token %}
-            <button type="submit" class="btn">Удалить</button>
-            <a href="{{ film.get_absolute_url }}">Отмена</a>
+            {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+            <div class="film-form-actions film-form-actions--compact">
+                <button type="submit" class="btn film-form-submit">Удалить</button>
+                <a href="{{ cancel_url }}" class="film-form-cancel">Отмена</a>
+            </div>
         </form>
     </div>
 </section>

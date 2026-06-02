@@ -3,26 +3,91 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="content-text auth-form">
-    <h1>Профиль</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% if user.photo %}
-        <p><img src="{{ user.photo.url }}" alt="Фото профиля" class="profile-photo"></p>
-        {% else %}
-        <p><img src="{{ default_image }}" alt="Фото по умолчанию" class="profile-photo"></p>
-        {% endif %}
-        <div class="form-error">{{ form.non_field_errors }}</div>
-        {% for f in form %}
-        <p>
-            <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}:</label>
-            {{ f }}
-        </p>
-        <div class="form-error">{{ f.errors }}</div>
-        {% endfor %}
-        <p><button type="submit">Сохранить</button></p>
-    </form>
-    <hr>
-    <p><a href="{% url 'users:password_change' %}">Сменить пароль</a></p>
-</div>
+<section class="auth-page">
+    <div class="auth-card auth-card--wide">
+        <header class="auth-header profile-header">
+            <div class="profile-avatar">
+                <img
+                    src="{% if user.photo %}{{ user.photo.url }}{% else %}{{ default_image }}{% endif %}"
+                    alt="Фото профиля"
+                    class="profile-photo"
+                >
+            </div>
+            {% if user.get_full_name %}
+            <p class="auth-subtitle">{{ user.get_full_name }}</p>
+            {% else %}
+            <p class="auth-subtitle">@{{ user.username }}</p>
+            {% endif %}
+        </header>
+
+        <form method="post" enctype="multipart/form-data" class="auth-form-body" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <ul class="auth-errors auth-errors--global">
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <div class="auth-field{% if form.photo.errors %} auth-field--error{% endif %}">
+                <label class="auth-label" for="{{ form.photo.id_for_label }}">{{ form.photo.label }}</label>
+                <div class="profile-photo-box">
+                    {{ form.photo }}
+                </div>
+                {% if form.photo.errors %}
+                <ul class="auth-errors">
+                    {% for error in form.photo.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+
+            <div class="auth-grid">
+                {% include 'users/auth_field.html' with field=form.first_name %}
+                {% include 'users/auth_field.html' with field=form.last_name %}
+            </div>
+
+            {% include 'users/auth_field.html' with field=form.date_birth %}
+
+            <div class="profile-readonly-group">
+                <div class="auth-field auth-field--readonly{% if form.username.errors %} auth-field--error{% endif %}">
+                    <label class="auth-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    {{ form.username }}
+                    <p class="profile-field-note">Логин нельзя изменить</p>
+                    {% if form.username.errors %}
+                    <ul class="auth-errors">
+                        {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+
+                <div class="auth-field auth-field--readonly{% if form.email.errors %} auth-field--error{% endif %}">
+                    <label class="auth-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    <p class="profile-field-note">E-mail нельзя изменить</p>
+                    {% if form.email.errors %}
+                    <ul class="auth-errors">
+                        {% for error in form.email.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="auth-actions">
+                <button type="submit" class="btn auth-submit">Сохранить</button>
+            </div>
+        </form>
+
+        <footer class="auth-footer">
+            <p><a href="{% url 'users:password_change' %}">Сменить пароль</a></p>
+        </footer>
+    </div>
+</section>
 {% endblock %}

@@ -8,7 +8,20 @@ from django.contrib.auth.forms import (
 )
 from django.contrib.auth import get_user_model
 
+from FilmReel.file_utils import delete_replaced_or_cleared_file
+
 User = get_user_model()
+
+
+class ProfilePhotoWidget(forms.ClearableFileInput):
+    template_name = "users/clearable_profile_photo_input.html"
+    clear_checkbox_label = "Очистить"
+
+    def __init__(self, attrs=None):
+        default_attrs = {"class": "profile-photo-input"}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
 
 
 class LoginUserForm(AuthenticationForm):
@@ -99,9 +112,16 @@ class ProfileUserForm(forms.ModelForm):
             "last_name": "Фамилия",
         }
         widgets = {
+            "photo": ProfilePhotoWidget(),
             "first_name": forms.TextInput(attrs={"class": "form-input"}),
             "last_name": forms.TextInput(attrs={"class": "form-input"}),
         }
+
+    def save(self, commit=True):
+        delete_replaced_or_cleared_file(
+            self.instance, "photo", self.cleaned_data.get("photo")
+        )
+        return super().save(commit=commit)
 
 
 class UserPasswordChangeForm(PasswordChangeForm):

@@ -1,0 +1,13 @@
+<div class="film-form-field film-form-field--poster{% if field.errors %} film-form-field--error{% endif %}">
+    <span class="film-form-label">{{ field.label }}</span>
+    <div class="film-form-poster-box">
+        {{ field }}
+    </div>
+    {% if field.errors %}
+    <ul class="film-form-errors">
+        {% for error in field.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>

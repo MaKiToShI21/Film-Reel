@@ -1,0 +1,24 @@
+{% load static %}
+
+<div class="film-form-field film-form-field--picker{% if field.errors %} film-form-field--error{% endif %}">
+    <span class="film-form-label">{{ field.label }}</span>
+    <ul class="film-form-picker-list">
+        {% for checkbox in field %}
+        <li>
+            <label class="film-form-picker-item">
+                {{ checkbox.tag }}
+                <span>{{ checkbox.choice_label }}</span>
+            </label>
+        </li>
+        {% empty %}
+        <li class="film-form-picker-empty">Нет доступных значений</li>
+        {% endfor %}
+    </ul>
+    {% if field.errors %}
+    <ul class="film-form-errors">
+        {% for error in field.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>

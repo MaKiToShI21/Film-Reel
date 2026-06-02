@@ -1,0 +1,75 @@
+{% load static %}
+
+{% if user.is_authenticated %}
+<a href="{% url 'films:add_film_model' %}" class="sidebar-add-film">
+    <img src="{% static 'img/add.png' %}" alt="" class="sidebar-add-film-icon" width="22" height="22">
+    <span>Добавить фильм</span>
+</a>
+{% endif %}
+
+<form class="catalog-filter-form" method="get" action="{% url 'films:home' %}">
+    {% if search_query %}
+    <input type="hidden" name="q" value="{{ search_query }}">
+    {% endif %}
+    {% if sort_by != "date" %}
+    <input type="hidden" name="sort" value="{{ sort_by }}">
+    {% endif %}
+
+    <div class="sidebar-section">
+        <h3 class="sidebar-title">Жанры</h3>
+        <ul class="sidebar-filter-list">
+            {% for genre in genres %}
+            <li>
+                <label class="sidebar-checkbox">
+                    <input type="checkbox" name="genre" value="{{ genre.id }}"
+                        {% if genre.id in selected_genres %}checked{% endif %}>
+                    <span>{{ genre.name }}</span>
+                </label>
+            </li>
+            {% empty %}
+            <li class="sidebar-empty">Нет жанров</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <h3 class="sidebar-title">Режиссёры</h3>
+        <ul class="sidebar-filter-list">
+            {% for director in directors %}
+            <li>
+                <label class="sidebar-checkbox">
+                    <input type="checkbox" name="director" value="{{ director.id }}"
+                        {% if director.id in selected_directors %}checked{% endif %}>
+                    <span>{{ director.name }}</span>
+                </label>
+            </li>
+            {% empty %}
+            <li class="sidebar-empty">Нет режиссёров</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <h3 class="sidebar-title">Теги</h3>
+        <ul class="sidebar-filter-list">
+            {% for tag in tags %}
+            <li>
+                <label class="sidebar-checkbox">
+                    <input type="checkbox" name="tag" value="{{ tag.id }}"
+                        {% if tag.id in selected_tags %}checked{% endif %}>
+                    <span>{{ tag.tag }}</span>
+                </label>
+            </li>
+            {% empty %}
+            <li class="sidebar-empty">Нет тегов</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="sidebar-actions">
+        <button type="submit" class="btn sidebar-apply-btn">Применить</button>
+        {% if has_active_filters or search_query %}
+        <a class="sidebar-reset-link" href="{% url 'films:home' %}">Сбросить</a>
+        {% endif %}
+    </div>
+</form>
