@@ -1448,6 +1448,10 @@ textarea.film-form-input {
     background: #fef2f2;
 }
 
+.film-rate-cancel[hidden] {
+    display: none;
+}
+
 .film-rate-cancel img {
     width: 14px;
     height: 14px;

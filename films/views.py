@@ -483,6 +483,7 @@ def delete_film_comment(request, film_slug, comment_id):
     return redirect(f"{film.get_absolute_url()}#comments")
 
 
+@login_required
 @require_POST
 def vote_film_comment(request, film_slug, comment_id):
     film = _get_accessible_film(request, film_slug)

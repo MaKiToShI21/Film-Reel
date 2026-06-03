@@ -1,4 +1,4 @@
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Q
 
 from .models import FilmComment, FilmCommentReaction, Films
 from .rating_utils import get_rater_key
@@ -18,27 +18,47 @@ def _comment_queryset():
     )
 
 
+def _set_replies_prefetch_cache(comment, replies_by_parent):
+    replies = replies_by_parent.get(comment.pk, [])
+    comment._prefetched_objects_cache = getattr(comment, "_prefetched_objects_cache", {})
+    comment._prefetched_objects_cache["replies"] = replies
+    for reply in replies:
+        _set_replies_prefetch_cache(reply, replies_by_parent)
+
+
+def _iter_comment_tree(comments):
+    for comment in comments:
+        yield comment
+        yield from _iter_comment_tree(comment.replies.all())
+
+
 def get_film_comments(film):
-    reply_qs = _comment_queryset().order_by("time_create")
-    return (
+    all_comments = list(
         _comment_queryset()
-        .filter(film=film, parent__isnull=True)
-        .prefetch_related(Prefetch("replies", queryset=reply_qs))
+        .filter(film=film)
         .order_by("time_create")
     )
 
+    replies_by_parent = {}
+    root_comments = []
+    for comment in all_comments:
+        if comment.parent_id is None:
+            root_comments.append(comment)
+        else:
+            replies_by_parent.setdefault(comment.parent_id, []).append(comment)
+
+    for comment in all_comments:
+        _set_replies_prefetch_cache(comment, replies_by_parent)
+
+    return root_comments
+
 
 def get_user_comment_reactions(request, comments):
-    comment_ids = []
-    for comment in comments:
-        comment_ids.append(comment.pk)
-        comment_ids.extend(reply.pk for reply in comment.replies.all())
+    comment_ids = [comment.pk for comment in _iter_comment_tree(comments)]
 
     if not comment_ids:
-        for comment in comments:
+        for comment in _iter_comment_tree(comments):
             comment.user_reaction = None
-            for reply in comment.replies.all():
-                reply.user_reaction = None
         return {}
 
     reactor_key = get_rater_key(request)
@@ -50,10 +70,8 @@ def get_user_comment_reactions(request, comments):
         )
     }
 
-    for comment in comments:
+    for comment in _iter_comment_tree(comments):
         comment.user_reaction = reactions.get(comment.pk)
-        for reply in comment.replies.all():
-            reply.user_reaction = reactions.get(reply.pk)
 
     return reactions
 
