@@ -1,4 +1,4 @@
-{% load static %}
+{% load static films_tags %}
 <article
     class="film-comment{% if comment.parent_id %} film-comment--reply{% endif %}"
     id="comment-{{ comment.pk }}"
@@ -58,6 +58,8 @@
 
         {% if request.user.is_authenticated and request.user.pk == comment.author_id %}
         <button type="button" class="film-comment-edit-toggle">Изменить</button>
+        {% endif %}
+        {% if comment|user_can_delete_comment:request.user %}
         <form
             class="film-comment-delete-form"
             method="post"

@@ -20,7 +20,7 @@ from .comment_utils import (
     get_user_comment_reactions,
     set_comment_reaction,
 )
-from .permissions import can_change_film, can_delete_film, can_manage_all_films
+from .permissions import can_change_film, can_delete_comment, can_delete_film, can_manage_all_films
 from .rating_utils import (
     clear_user_film_rating,
     get_rater_key,
@@ -473,12 +473,9 @@ def delete_film_comment(request, film_slug, comment_id):
     film = _get_accessible_film(request, film_slug)
     if not film_comments_enabled(film):
         raise PermissionDenied
-    comment = get_object_or_404(
-        FilmComment,
-        pk=comment_id,
-        film=film,
-        author=request.user,
-    )
+    comment = get_object_or_404(FilmComment, pk=comment_id, film=film)
+    if not can_delete_comment(request.user, comment):
+        raise PermissionDenied
     comment.delete()
     return redirect(f"{film.get_absolute_url()}#comments")
 

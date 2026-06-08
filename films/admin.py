@@ -194,7 +194,7 @@ class DirectorAdmin(MetadataAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(FilmDetails)
-class FilmDetailsAdmin(SuperuserOnlyAdminMixin, admin.ModelAdmin):
+class FilmDetailsAdmin(MetadataAdminMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "film",
@@ -208,7 +208,7 @@ class FilmDetailsAdmin(SuperuserOnlyAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(FilmComment)
-class FilmCommentAdmin(SuperuserOnlyAdminMixin, admin.ModelAdmin):
+class FilmCommentAdmin(ModeratorCatalogAdminMixin, admin.ModelAdmin):
     list_display = ("id", "film", "author", "time_create", "parent")
     search_fields = ("author__username", "text", "film__title")
     list_filter = ("time_create",)

@@ -25,3 +25,11 @@ def can_delete_film(user, film):
 
 def can_manage_catalog_metadata(user):
     return user.is_authenticated and (user.is_superuser or is_moderator(user))
+
+
+def can_delete_comment(user, comment):
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or is_moderator(user):
+        return True
+    return comment.author_id == user.pk
